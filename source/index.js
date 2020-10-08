@@ -42,7 +42,8 @@ class ProgressBar {
 				height: 170
 			},
 
-			remoteWindow: null
+			remoteWindow: null,
+			existingWindow: null
 		};
 
 		this._styleSelector = {
@@ -70,7 +71,6 @@ class ProgressBar {
 		this._inProgress = true;
 		this._options = this._parseOptions(options);
 		this._realValue = this._options.initialValue;
-		this._window = null;
 
 		if (electronApp) {
 			if (electronApp.isReady()) {
@@ -142,6 +142,10 @@ class ProgressBar {
 
 	getOptions() {
 		return extend({}, this._options);
+	}
+
+	getWindow() {
+		return this._window;
 	}
 
 	on(event, callback) {
@@ -245,7 +249,9 @@ class ProgressBar {
 	}
 
 	_createWindow() {
-		if (this._options.remoteWindow) {
+		if (this._options.existingWindow !== null) {
+			this._window = this._options.existingWindow;
+		} else if (this._options.remoteWindow) {
 			this._window = new this._options.remoteWindow(this._options.browserWindow);
 		} else {
 			this._window = new BrowserWindow(this._options.browserWindow);
@@ -503,6 +509,9 @@ const htmlContent = `
 			};
 
 			function createProgressBar(settings){
+				if (elements.progressBar) {
+					elements.progressBarContainer.removeChild(elements.progressBar);
+				}
 				if(settings.indeterminate){
 					var progressBar = document.createElement("div");
 					progressBar.setAttribute("id", "progressBar");
